@@ -8,6 +8,11 @@ class Booking extends Model
 {
     //
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 
 
     protected $fillable = [
@@ -23,4 +28,12 @@ class Booking extends Model
         'total_amount',
         'status',
     ];
+
+
+
+    public function rooms()
+{
+    return $this->belongsToMany(Room::class, 'booking_room', 'booking_id', 'room_id');
+}
+
 }

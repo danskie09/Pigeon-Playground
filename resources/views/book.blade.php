@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booking Form</title>
+    <title>Multiple Room Booking Form</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light">
@@ -26,7 +26,7 @@
         @endif
 
         <div class="row justify-content-center">
-            <div class="col-12 col-md-8 col-lg-6">
+            <div class="col-12 col-lg-8">
                 <div class="card shadow-sm">
                     <div class="card-body">
                         <div class="border-bottom pb-3 mb-4">
@@ -38,9 +38,30 @@
 
                         <form action="{{ route('book.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
-                            <div class="mb-3">
-                                <label for="room_id" class="form-label small">Room ID</label>
-                                <input type="number" name="room_id" id="room_id" class="form-control" required>
+                            <div id="rooms-container">
+                                <div class="room-selection mb-4 border-bottom pb-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">Room 1</h6>
+                                        <button type="button" class="btn btn-sm btn-outline-danger remove-room" style="display: none;">Remove Room</button>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small">Select Room</label>
+                                        <select name="room_ids[]" class="form-select room-select" required>
+                                            <option value="">Choose a room...</option>
+                                            @foreach($rooms as $room)
+                                                <option value="{{ $room->id }}" data-price="{{ $room->price }}">
+                                                    {{ $room->name }} - P {{ $room->price }}/night
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <button type="button" id="add-room" class="btn btn-outline-primary btn-sm">
+                                    + Add Another Room
+                                </button>
                             </div>
 
                             <div class="row">
@@ -54,14 +75,13 @@
                                 </div>
                             </div>
 
-                            <!-- Modified availability message section -->
                             <div class="availability-container mb-3">
                                 <div id="loading-spinner" class="d-none">
                                     <div class="d-flex align-items-center text-primary mb-2">
                                         <div class="spinner-border spinner-border-sm me-2" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
-                                        <span class="small">Checking room availability...</span>
+                                        <span class="small">Checking rooms availability...</span>
                                     </div>
                                 </div>
                                 <div id="availability-message"></div>
@@ -90,7 +110,7 @@
 
                             <div class="mb-4">
                                 <label for="total_amount" class="form-label small">Total Amount</label>
-                                <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control" required>
+                                <input type="number" step="0.01" name="total_amount" id="total_amount" class="form-control" readonly>
                             </div>
 
                             <div>
@@ -107,6 +127,53 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script>
         $(document).ready(function() {
+            let roomCount = 1;
+            
+            // Add room
+            $('#add-room').click(function() {
+                roomCount++;
+                const roomHtml = `
+                    <div class="room-selection mb-4 border-bottom pb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">Room ${roomCount}</h6>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-room">Remove Room</button>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Select Room</label>
+                            <select name="room_ids[]" class="form-select room-select" required>
+                                <option value="">Choose a room...</option>
+                                @foreach($rooms as $room)
+                                    <option value="{{ $room->id }}" data-price="{{ $room->price }}">
+                                        {{ $room->name }} - ${{ $room->price }}/night
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                `;
+                $('#rooms-container').append(roomHtml);
+                updateRemoveButtons();
+                checkAvailability();
+            });
+
+            // Remove room
+            $(document).on('click', '.remove-room', function() {
+                $(this).closest('.room-selection').remove();
+                roomCount--;
+                updateRemoveButtons();
+                checkAvailability();
+                calculateTotal();
+            });
+
+            function updateRemoveButtons() {
+                if (roomCount > 1) {
+                    $('.remove-room').show();
+                } else {
+                    $('.remove-room').hide();
+                }
+            }
+
+            // Rest of your existing JavaScript for availability checking
             let checkingAvailability = false;
             let timeoutId = null;
 
@@ -123,11 +190,16 @@
             function checkAvailability() {
                 if (checkingAvailability) return;
 
-                let roomId = $('#room_id').val();
+                let roomIds = [];
+                $('.room-select').each(function() {
+                    let value = $(this).val();
+                    if (value) roomIds.push(value);
+                });
+                
                 let checkIn = $('#check_in').val();
                 let checkOut = $('#check_out').val();
 
-                if (roomId && checkIn && checkOut) {
+                if (roomIds.length > 0 && checkIn && checkOut) {
                     checkingAvailability = true;
                     showLoadingSpinner();
 
@@ -135,7 +207,7 @@
                         url: "{{ route('check.availability') }}",
                         method: "POST",
                         data: {
-                            room_id: roomId,
+                            room_ids: roomIds,
                             check_in: checkIn,
                             check_out: checkOut,
                             _token: "{{ csrf_token() }}"
@@ -150,7 +222,6 @@
                                     'text-danger alert alert-danger')
                                 .addClass('p-2 small');
                             
-                            // Enable or disable the submit button based on availability
                             $('#submit-button').prop('disabled', !response.available);
                         },
                         error: function() {
@@ -159,7 +230,6 @@
                                 .removeClass('text-success alert-success')
                                 .addClass('text-danger alert alert-danger p-2 small');
                             
-                            // Disable the submit button on error
                             $('#submit-button').prop('disabled', true);
                         },
                         complete: function() {
@@ -173,44 +243,60 @@
                 }
             }
 
-            // Add input event listeners with debouncing
-            $('#check_in, #check_out, #room_id').on('input change', function() {
+            function calculateTotal() {
+                let total = 0;
+                let checkIn = new Date($('#check_in').val());
+                let checkOut = new Date($('#check_out').val());
+                
+                if (checkIn && checkOut) {
+                    let nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                    
+                    $('.room-select').each(function() {
+                        let selected = $(this).find('option:selected');
+                        let price = selected.data('price');
+                        if (price) {
+                            total += price * nights;
+                        }
+                    });
+                }
+                
+                $('#total_amount').val(total.toFixed(2));
+            }
+
+            // Event listeners
+            $(document).on('change', '.room-select', function() {
+                checkAvailability();
+                calculateTotal();
+            });
+
+            $('#check_in, #check_out').on('input change', function() {
                 if (timeoutId) {
                     clearTimeout(timeoutId);
                 }
                 
-                // Only show loading if we have all required values
-                let roomId = $('#room_id').val();
-                let checkIn = $('#check_in').val();
-                let checkOut = $('#check_out').val();
-                
-                if (roomId && checkIn && checkOut) {
+                if ($('.room-select').val() && $('#check_in').val() && $('#check_out').val()) {
                     showLoadingSpinner();
                 }
                 
-                // Debounce the API call by 500ms
-                timeoutId = setTimeout(checkAvailability, 500);
+                timeoutId = setTimeout(function() {
+                    checkAvailability();
+                    calculateTotal();
+                }, 500);
             });
-        });
-    </script>
 
-    <script>
-        // Optional: Add validation for check-in/check-out dates
-        $(document).ready(function() {
+            // Date validation
             $('#check_in').on('change', function() {
                 let checkIn = new Date($(this).val());
                 let checkOut = new Date($('#check_out').val());
                 
-                // Set minimum check-out date to check-in date
                 $('#check_out').attr('min', $(this).val());
                 
-                // If check-out date is before check-in date, reset it
                 if (checkOut <= checkIn) {
                     $('#check_out').val('');
                 }
+                calculateTotal();
             });
             
-            // Set minimum check-in date to today
             let today = new Date().toISOString().split('T')[0];
             $('#check_in').attr('min', today);
         });

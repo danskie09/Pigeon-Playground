@@ -3,13 +3,16 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\RoomController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
+
 Route::get('/dashboard', function () {
-    return view('book');
+    $rooms = \App\Models\Room::all();
+    return view('book', ['rooms' => $rooms]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -21,6 +24,8 @@ Route::middleware('auth')->group(function () {
 
 
 Route::post('/book', [BookingController::class, 'store'])->name('book.store');
+Route::get('/showbook', [BookingController::class, 'show'])->name('bookings.show');
+Route::post('/get-room-prices', [RoomController::class, 'getRoomPrices'])->name('get.room.prices');
 
 
 Route::post('/check-availability', [BookingController::class, 'checkAvailability'])->name('check.availability');
