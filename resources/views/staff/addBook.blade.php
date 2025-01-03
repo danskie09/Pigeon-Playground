@@ -65,7 +65,7 @@
         <!-- Left Column -->
         <div class="col-md-6 mb-4">
 
-            <form action="" method="POST">
+            <form action="{{ route('book.store') }}" method="POST">
                 @csrf
                 <!-- Guest Information Section -->
                 <div class="booking-section">
@@ -74,14 +74,20 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Guest Name</label>
-                            <input type="text" class="form-control" id="name" required>
+                            <input type="text" class="form-control" name="name" id="name" required>
                         </div>
+
+
                         <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" id="email" required>
+                        </div>
+                        {{-- <div class="col-md-6">
                             <label class="form-label">Country</label>
                             <select class="form-control" id="country">
                                 <option value="">Select a country</option>
                             </select>
-                        </div>
+                        </div> --}}
 
                     </div>
                 </div>
@@ -175,7 +181,7 @@
                             value="gcash">
                         <label class="form-check-label" for="gcashPayment">GCash</label>
                     </div>
-                   
+
                 </div>
 
                 <!-- GCash QR Section -->
@@ -199,13 +205,16 @@
                 <!-- Total Amount -->
                 <div class="mb-3">
                     <label class="form-label">Total Amount</label>
-                    <input type="number" step="0.01" class="form-control form-control-lg" id="total_amount"
-                        >
+                    <input type="number" step="0.01" class="form-control form-control-lg" id="total_amount">
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-lg w-100">Confirm Booking</button>
+                <button type="submit" id="submit-button" class="btn btn-primary btn-lg w-100">Confirm
+                    Booking</button>
             </div>
             </form>
+
+            <!-- Add this right after your form starts -->
+            <div id="error-message" class="alert alert-danger" style="display: none;"></div>
         </div>
     </div>
 
@@ -270,7 +279,7 @@
             let roomCount = 1;
             let checkingAvailability = false;
             let timeoutId = null;
-            
+
             $('#add-room').click(function() {
                 roomCount++;
                 const roomHtml = `
@@ -326,7 +335,7 @@
 
 
 
-function checkAvailability() {
+            function checkAvailability() {
                 if (checkingAvailability) return;
 
                 let roomIds = [];
@@ -392,7 +401,7 @@ function checkAvailability() {
                 if (checkIn && checkOut) {
                     let nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
 
-                    $('.room-select').each(function () {
+                    $('.room-select').each(function() {
                         let selected = $(this).find('option:selected');
                         let price = selected.data('price');
                         if (price) {
@@ -401,16 +410,23 @@ function checkAvailability() {
                     });
                 }
 
+                // Fetch entrance fees and calculate total
+                $.ajax({
+                    url: "{{ route('entrance.fees') }}",
+                    method: "GET",
+                    success: function(response) {
+                        let adultCount = parseInt($('#adult').val()) || 0;
+                        let kidsCount = parseInt($('#kids').val()) || 0;
 
+                        total += (adultCount * response.adult_rate) + (kidsCount * response.child_rate);
 
-                // Calculate additional charges for adults and kids
-                let adultCount = parseInt($('#adult').val()) || 0;
-                let kidsCount = parseInt($('#kids').val()) || 0;
-
-                total += (adultCount * 100) + (kidsCount * 50);
-
-                // Update the total amount input
-                $('#total_amount').val(total.toFixed(2));
+                        // Update the total amount input
+                        $('#total_amount').val(total.toFixed(2));
+                    },
+                    error: function() {
+                        console.error('Failed to fetch entrance fees');
+                    }
+                });
             }
 
             // Attach event listeners for adults and kids input fields
@@ -424,11 +440,11 @@ function checkAvailability() {
                 if (timeoutId) {
                     clearTimeout(timeoutId);
                 }
-                
+
                 if ($('.room-select').val() && $('#check_in').val() && $('#check_out').val()) {
                     showLoadingSpinner();
                 }
-                
+
                 timeoutId = setTimeout(function() {
                     checkAvailability();
                     calculateTotal();
@@ -439,18 +455,65 @@ function checkAvailability() {
             $('#check_in').on('change', function() {
                 let checkIn = new Date($(this).val());
                 let checkOut = new Date($('#check_out').val());
-                
+
                 $('#check_out').attr('min', $(this).val());
-                
+
                 if (checkOut <= checkIn) {
                     $('#check_out').val('');
                 }
                 calculateTotal();
             });
-            
+
             let today = new Date().toISOString().split('T')[0];
             $('#check_in').attr('min', today);
         }); // End of document.ready
+
+
+
+        // Modify your form submission to include all form fields
+        $('form').on('submit', function(e) {
+            e.preventDefault();
+
+            let formData = {
+                name: $('#name').val(),
+                email: $('#email').val(),
+                room_ids: $('.room-select').map(function() {
+                    return $(this).val();
+                }).get(),
+                check_in: $('#check_in').val(),
+                check_out: $('#check_out').val(),
+                adult: $('#adult').val(),
+                kids: $('#kids').val(),
+                payment_method: $('input[name="paymentMethod"]:checked').val(),
+                special_request: $('#specialRequest').val(),
+                total_amount: $('#total_amount').val(),
+                _token: $('input[name="_token"]').val()
+            };
+
+            $.ajax({
+                url: $(this).attr('action'),
+                method: 'POST',
+                data: formData,
+                success: function(response) {
+                    $('#error-message')
+                        .removeClass('alert-danger')
+                        .addClass('alert-success')
+                        .html(response.message)
+                        .show();
+                },
+                error: function(xhr) {
+                    let errorMessage = 'An error occurred';
+                    if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMessage = xhr.responseJSON.error;
+                    }
+                    $('#error-message')
+                        .removeClass('alert-success')
+                        .addClass('alert-danger')
+                        .html(errorMessage)
+                        .show();
+                }
+            });
+        });
     </script>
 
 </body>
