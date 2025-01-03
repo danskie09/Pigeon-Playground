@@ -50,7 +50,16 @@ class BookingController extends Controller
     }
 
 
-    // In your BookingController
+    
+
+    public function approved(Booking $id)
+    {
+        $id->update(['status' => 'approved']);
+        return redirect()->back()->with('success', 'Booking approved successfully!');
+    }
+
+
+
 
     public function checkAvailability(Request $request)
     {

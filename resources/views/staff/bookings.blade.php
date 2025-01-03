@@ -72,9 +72,19 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    
-                                   
-                                    </form>
+                                    @if($booking->status === 'pending')
+                                        <form action="{{ route('bookings.approved', $booking) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-success">Approve Booking</button>
+                                        </form>
+                                    @elseif($booking->status === 'approved')
+                                        <form action="" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn btn-danger">Cancel Booking</button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

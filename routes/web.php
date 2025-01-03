@@ -10,6 +10,11 @@ Route::get('/', function () {
 });
 
 
+
+Route::get('/addBook', function () {
+    return view('staff.addBook');
+});
+
 Route::get('/dashboard', function () {
     $rooms = \App\Models\Room::all();
     return view('book', ['rooms' => $rooms]);
@@ -25,7 +30,9 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/book', [BookingController::class, 'store'])->name('book.store');
 Route::get('/showbook', [BookingController::class, 'show'])->name('bookings.show');
-Route::post('/get-room-prices', [RoomController::class, 'getRoomPrices'])->name('get.room.prices');
+
+
+Route::patch('/booking/approved/{id}', [BookingController::class, 'approved'])->name('bookings.approved');
 
 
 Route::post('/check-availability', [BookingController::class, 'checkAvailability'])->name('check.availability');

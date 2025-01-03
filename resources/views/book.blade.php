@@ -244,30 +244,40 @@
             }
 
             function calculateTotal() {
-                let total = 0;
-                let checkIn = new Date($('#check_in').val());
-                let checkOut = new Date($('#check_out').val());
-                
-                if (checkIn && checkOut) {
-                    let nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-                    
-                    $('.room-select').each(function() {
-                        let selected = $(this).find('option:selected');
-                        let price = selected.data('price');
-                        if (price) {
-                            total += price * nights;
-                        }
-                    });
-                }
-                
-                $('#total_amount').val(total.toFixed(2));
-            }
+    let total = 0;
 
-            // Event listeners
-            $(document).on('change', '.room-select', function() {
-                checkAvailability();
-                calculateTotal();
-            });
+    // Calculate room cost
+    let checkIn = new Date($('#check_in').val());
+    let checkOut = new Date($('#check_out').val());
+    if (checkIn && checkOut) {
+        let nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+        $('.room-select').each(function () {
+            let selected = $(this).find('option:selected');
+            let price = selected.data('price');
+            if (price) {
+                total += price * nights;
+            }
+        });
+    }
+
+    // Calculate additional charges for adults and kids
+    let adultCount = parseInt($('#adult').val()) || 0;
+    let kidsCount = parseInt($('#kids').val()) || 0;
+
+    total += (adultCount * 100) + (kidsCount * 50);
+
+    // Update the total amount input
+    $('#total_amount').val(total.toFixed(2));
+}
+
+// Attach event listeners for adults and kids input fields
+$('#adult, #kids').on('input', calculateTotal);
+
+// Update calculateTotal on other relevant events
+$(document).on('change', '.room-select', calculateTotal);
+$('#check_in, #check_out').on('input change', calculateTotal);
+
 
             $('#check_in, #check_out').on('input change', function() {
                 if (timeoutId) {
