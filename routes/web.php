@@ -11,8 +11,10 @@ Route::get('/', function () {
 
 
 
+
 Route::get('/addBook', function () {
-    return view('staff.addBook');
+    $rooms = \App\Models\Room::all();
+    return view('staff.addBook', ['rooms' => $rooms]);
 });
 
 Route::get('/dashboard', function () {

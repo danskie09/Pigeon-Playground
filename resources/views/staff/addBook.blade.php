@@ -64,134 +64,103 @@
     <div class="row px-2 py-2">
         <!-- Left Column -->
         <div class="col-md-6 mb-4">
-            <!-- Guest Information Section -->
-            <div class="booking-section">
-                <h4 class="section-title">Guest Information</h4>
-                <div class="row g-3">
 
-                    <div class="col-md-6">
-                        <label class="form-label">Guest Name</label>
-                        <input type="text" class="form-control" id="name" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Country</label>
-                        <select class="form-control" id="country">
-                            <option value="">Select a country</option>
-                        </select>
-                    </div>
+            <form action="" method="POST">
+                @csrf
+                <!-- Guest Information Section -->
+                <div class="booking-section">
+                    <h4 class="section-title">Guest Information</h4>
+                    <div class="row g-3">
 
-                </div>
-            </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Guest Name</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Country</label>
+                            <select class="form-control" id="country">
+                                <option value="">Select a country</option>
+                            </select>
+                        </div>
 
-            <!-- Dates Section -->
-            <div class="booking-section">
-                <h4 class="section-title">Booking Dates</h4>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Check-in Date & Time</label>
-                        <input type="text" class="form-control" id="checkIn" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Check-out Date & Time</label>
-                        <input type="text" class="form-control" id="checkOut" required>
                     </div>
                 </div>
-            </div>
 
-            <!-- Guest Count Section -->
-            <div class="booking-section">
-                <h4 class="section-title">Guest Count</h4>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label">Number of Adults</label>
-                        <input type="number" class="form-control" id="adult" min="1" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">Number of Children</label>
-                        <input type="number" class="form-control" id="kids" min="0">
+                <!-- Dates Section -->
+                <div class="booking-section">
+                    <h4 class="section-title">Booking Dates</h4>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Check-in Date & Time</label>
+                            <input type="text" class="form-control" id="check_in" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Check-out Date & Time</label>
+                            <input type="text" class="form-control" id="check_out" required>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+
+                <div class="availability-container mb-3">
+                    <div id="loading-spinner" class="d-none">
+                        <div class="d-flex align-items-center text-primary mb-2">
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="small">Checking rooms availability...</span>
+                        </div>
+                    </div>
+                    <div id="availability-message"></div>
+                </div>
+
+                <!-- Guest Count Section -->
+                <div class="booking-section">
+                    <h4 class="section-title">Guest Count</h4>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Number of Adults</label>
+                            <input type="number" class="form-control" id="adult" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Number of Children</label>
+                            <input type="number" class="form-control" id="kids" min="0">
+                        </div>
+                    </div>
+                </div>
         </div>
 
         <!-- Right Column -->
         <div class="col-md-6">
             <!-- Room Selection Section -->
             <div class="booking-section">
-                <h4 class="section-title">Room Selection</h4>
-                <div class="row g-3 scrollable-rooms" style="max-height: 400px; overflow-y: auto;">
-                    <!-- Deluxe Room -->
-                    <div class="col-12">
-                        <div class="card room-card">
-                            <input type="radio" class="btn-check" name="roomType" id="room1" value="1"
-                                required>
-                            <label class="btn card-body" for="room1">
-                                <div class="row align-items-center">
-                                    <div class="col-4">
-                                        <img src="{{ asset('assets/images/room101.webp') }}" class="img-fluid rounded"
-                                            alt="Deluxe Room" style="width: 150px; height: 100px; object-fit: cover;">
-                                    </div>
-                                    <div class="col-8">
-                                        <h5 class="card-title">Room 101</h5>
-                                        <div class="d-flex gap-3">
-                                            <span><i class="bi bi-people-fill"></i> Max 2 Adults</span>
-                                            <span><i class="bi bi-wifi"></i> Free WiFi</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
 
-                    <!-- Superior Room -->
-                    <div class="col-12">
-                        <div class="card room-card">
-                            <input type="radio" class="btn-check" name="roomType" id="room2" value="2"
-                                required>
-                            <label class="btn card-body" for="room2">
-                                <div class="row align-items-center">
-                                    <div class="col-4">
-                                        <img src="{{ asset('assets/images/room102.webp') }}" class="img-fluid rounded"
-                                            alt="Superior Room" style="width: 150px; height: 100px; object-fit: cover;">
-                                    </div>
-                                    <div class="col-8">
-                                        <h5 class="card-title">Room 102</h5>
-                                        <div class="d-flex gap-3">
-                                            <span><i class="bi bi-people-fill"></i> Max 3 Adults</span>
-                                            <span><i class="bi bi-wifi"></i> Free WiFi</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
+                <div id="rooms-container">
+                    <div class="room-selection mb-4 border-bottom pb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0">Room 1</h6>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-room"
+                                style="display: none;">Remove Room</button>
                         </div>
-                    </div>
-
-                    <!-- Executive Suite -->
-                    <div class="col-12">
-                        <div class="card room-card">
-                            <input type="radio" class="btn-check" name="roomType" id="room3" value="3"
-                                required>
-                            <label class="btn card-body" for="room3">
-                                <div class="row align-items-center">
-                                    <div class="col-4">
-                                        <img src="{{ asset('assets/images/room103.webp') }}" class="img-fluid rounded"
-                                            alt="Executive Suite"
-                                            style="width: 150px; height: 100px; object-fit: cover;">
-                                    </div>
-                                    <div class="col-8">
-                                        <h5 class="card-title">Room 103</h5>
-                                        <div class="d-flex gap-3">
-                                            <span><i class="bi bi-people-fill"></i> Max 4 Adults</span>
-                                            <span><i class="bi bi-wifi"></i> Free WiFi</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
+                        <div class="mb-3">
+                            <label class="form-label small">Select Room</label>
+                            <select name="room_ids[]" class="form-select room-select" required>
+                                <option value="">Choose a room...</option>
+                                @foreach ($rooms as $room)
+                                    <option value="{{ $room->id }}" data-price="{{ $room->price }}">
+                                        {{ $room->name }} - P {{ $room->price }}/night
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>
-
+            <div class="mb-4">
+                <button type="button" id="add-room" class="btn btn-outline-primary btn-sm">
+                    + Add Another Room
+                </button>
+            </div>
             <!-- Payment Section -->
             <div class="booking-section">
                 <h4 class="section-title">Payment Details</h4>
@@ -235,6 +204,7 @@
 
                 <button type="submit" class="btn btn-primary btn-lg w-100">Confirm Booking</button>
             </div>
+            </form>
         </div>
     </div>
 
@@ -252,13 +222,13 @@
 
     <script>
         // Initialize date pickers
-        flatpickr("#checkIn", {
+        flatpickr("#check_in", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             minDate: "today"
         });
 
-        flatpickr("#checkOut", {
+        flatpickr("#check_out", {
             enableTime: true,
             dateFormat: "Y-m-d H:i",
             minDate: "today"
@@ -293,6 +263,122 @@
                     countrySelect.append(option).trigger('change');
                 });
         });
+
+
+        $(document).ready(function() {
+            let roomCount = 1;
+
+            // Add room
+            $('#add-room').click(function() {
+                roomCount++;
+                const roomHtml = `
+            <div class="room-selection mb-4 border-bottom pb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Room ${roomCount}</h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-room">Remove Room</button>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small">Select Room</label>
+                    <select name="room_ids[]" class="form-select room-select" required>
+                        <option value="">Choose a room...</option>
+                        @foreach ($rooms as $room)
+                            <option value="{{ $room->id }}" data-price="{{ $room->price }}">
+                                {{ $room->name }} - ${{ $room->price }}/night
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        `;
+                $('#rooms-container').append(roomHtml);
+                updateRemoveButtons();
+                checkAvailability();
+            });
+
+            // Remove room
+            $(document).on('click', '.remove-room', function() {
+                $(this).closest('.room-selection').remove();
+                roomCount--;
+                updateRemoveButtons();
+                checkAvailability();
+                calculateTotal();
+            });
+
+            function updateRemoveButtons() {
+                if (roomCount > 1) {
+                    $('.remove-room').show();
+                } else {
+                    $('.remove-room').hide();
+                }
+            }
+
+            function showLoadingSpinner() {
+                $('#loading-spinner').removeClass('d-none');
+                $('#availability-message').addClass('d-none');
+            }
+
+            function hideLoadingSpinner() {
+                $('#loading-spinner').addClass('d-none');
+                $('#availability-message').removeClass('d-none');
+            }
+
+            function checkAvailability() {
+                if (checkingAvailability) return;
+
+                let roomIds = [];
+                $('.room-select').each(function() {
+                    let value = $(this).val();
+                    if (value) roomIds.push(value);
+                });
+
+                let checkIn = $('#check_in').val();
+                let checkOut = $('#check_out').val();
+
+                if (roomIds.length > 0 && checkIn && checkOut) {
+                    checkingAvailability = true;
+                    showLoadingSpinner();
+
+                    $.ajax({
+                        url: "{{ route('check.availability') }}",
+                        method: "POST",
+                        data: {
+                            room_ids: roomIds,
+                            check_in: checkIn,
+                            check_out: checkOut,
+                            _token: "{{ csrf_token() }}"
+                        },
+                        success: function(response) {
+                            const messageElement = $('#availability-message');
+                            messageElement
+                                .text(response.message)
+                                .removeClass(
+                                    'text-success text-danger alert alert-success alert-danger')
+                                .addClass(response.available ?
+                                    'text-success alert alert-success' :
+                                    'text-danger alert alert-danger')
+                                .addClass('p-2 small');
+
+                            $('#submit-button').prop('disabled', !response.available);
+                        },
+                        error: function() {
+                            $('#availability-message')
+                                .text('Error checking availability. Please try again.')
+                                .removeClass('text-success alert-success')
+                                .addClass('text-danger alert alert-danger p-2 small');
+
+                            $('#submit-button').prop('disabled', true);
+                        },
+                        complete: function() {
+                            checkingAvailability = false;
+                            hideLoadingSpinner();
+                        }
+                    });
+                } else {
+                    $('#availability-message').empty();
+                    $('#submit-button').prop('disabled', true);
+                }
+            }
+        }); // Added closing bracket for document.ready
     </script>
 
 </body>

@@ -126,31 +126,33 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function() {
+
+$(document).ready(function() {
             let roomCount = 1;
+            let checkingAvailability = false;
+            let timeoutId = null;
             
-            // Add room
             $('#add-room').click(function() {
                 roomCount++;
                 const roomHtml = `
-                    <div class="room-selection mb-4 border-bottom pb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="mb-0">Room ${roomCount}</h6>
-                            <button type="button" class="btn btn-sm btn-outline-danger remove-room">Remove Room</button>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label small">Select Room</label>
-                            <select name="room_ids[]" class="form-select room-select" required>
-                                <option value="">Choose a room...</option>
-                                @foreach($rooms as $room)
-                                    <option value="{{ $room->id }}" data-price="{{ $room->price }}">
-                                        {{ $room->name }} - ${{ $room->price }}/night
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                `;
+            <div class="room-selection mb-4 border-bottom pb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">Room ${roomCount}</h6>
+                    <button type="button" class="btn btn-sm btn-outline-danger remove-room">Remove Room</button>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small">Select Room</label>
+                    <select name="room_ids[]" class="form-select room-select" required>
+                        <option value="">Choose a room...</option>
+                        @foreach ($rooms as $room)
+                            <option value="{{ $room->id }}" data-price="{{ $room->price }}">
+                                {{ $room->name }} - ${{ $room->price }}/night
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        `;
                 $('#rooms-container').append(roomHtml);
                 updateRemoveButtons();
                 checkAvailability();
@@ -173,10 +175,6 @@
                 }
             }
 
-            // Rest of your existing JavaScript for availability checking
-            let checkingAvailability = false;
-            let timeoutId = null;
-
             function showLoadingSpinner() {
                 $('#loading-spinner').removeClass('d-none');
                 $('#availability-message').addClass('d-none');
@@ -187,7 +185,9 @@
                 $('#availability-message').removeClass('d-none');
             }
 
-            function checkAvailability() {
+
+
+function checkAvailability() {
                 if (checkingAvailability) return;
 
                 let roomIds = [];
@@ -195,7 +195,7 @@
                     let value = $(this).val();
                     if (value) roomIds.push(value);
                 });
-                
+
                 let checkIn = $('#check_in').val();
                 let checkOut = $('#check_out').val();
 
@@ -216,12 +216,13 @@
                             const messageElement = $('#availability-message');
                             messageElement
                                 .text(response.message)
-                                .removeClass('text-success text-danger alert alert-success alert-danger')
-                                .addClass(response.available ? 
-                                    'text-success alert alert-success' : 
+                                .removeClass(
+                                    'text-success text-danger alert alert-success alert-danger')
+                                .addClass(response.available ?
+                                    'text-success alert alert-success' :
                                     'text-danger alert alert-danger')
                                 .addClass('p-2 small');
-                            
+
                             $('#submit-button').prop('disabled', !response.available);
                         },
                         error: function() {
@@ -229,7 +230,7 @@
                                 .text('Error checking availability. Please try again.')
                                 .removeClass('text-success alert-success')
                                 .addClass('text-danger alert alert-danger p-2 small');
-                            
+
                             $('#submit-button').prop('disabled', true);
                         },
                         complete: function() {
@@ -244,40 +245,41 @@
             }
 
             function calculateTotal() {
-    let total = 0;
+                let total = 0;
 
-    // Calculate room cost
-    let checkIn = new Date($('#check_in').val());
-    let checkOut = new Date($('#check_out').val());
-    if (checkIn && checkOut) {
-        let nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+                // Calculate room cost
+                let checkIn = new Date($('#check_in').val());
+                let checkOut = new Date($('#check_out').val());
+                if (checkIn && checkOut) {
+                    let nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
 
-        $('.room-select').each(function () {
-            let selected = $(this).find('option:selected');
-            let price = selected.data('price');
-            if (price) {
-                total += price * nights;
+                    $('.room-select').each(function () {
+                        let selected = $(this).find('option:selected');
+                        let price = selected.data('price');
+                        if (price) {
+                            total += price * nights;
+                        }
+                    });
+                }
+
+
+
+                // Calculate additional charges for adults and kids
+                let adultCount = parseInt($('#adult').val()) || 0;
+                let kidsCount = parseInt($('#kids').val()) || 0;
+
+                total += (adultCount * 100) + (kidsCount * 50);
+
+                // Update the total amount input
+                $('#total_amount').val(total.toFixed(2));
             }
-        });
-    }
 
-    // Calculate additional charges for adults and kids
-    let adultCount = parseInt($('#adult').val()) || 0;
-    let kidsCount = parseInt($('#kids').val()) || 0;
+            // Attach event listeners for adults and kids input fields
+            $('#adult, #kids').on('input', calculateTotal);
 
-    total += (adultCount * 100) + (kidsCount * 50);
-
-    // Update the total amount input
-    $('#total_amount').val(total.toFixed(2));
-}
-
-// Attach event listeners for adults and kids input fields
-$('#adult, #kids').on('input', calculateTotal);
-
-// Update calculateTotal on other relevant events
-$(document).on('change', '.room-select', calculateTotal);
-$('#check_in, #check_out').on('input change', calculateTotal);
-
+            // Update calculateTotal on other relevant events
+            $(document).on('change', '.room-select', calculateTotal);
+            $('#check_in, #check_out').on('input change', calculateTotal);
 
             $('#check_in, #check_out').on('input change', function() {
                 if (timeoutId) {
@@ -309,7 +311,7 @@ $('#check_in, #check_out').on('input change', calculateTotal);
             
             let today = new Date().toISOString().split('T')[0];
             $('#check_in').attr('min', today);
-        });
+        }); // End of document.ready
     </script>
 </body>
 </html>
