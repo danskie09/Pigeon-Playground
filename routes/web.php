@@ -38,6 +38,6 @@ Route::patch('/booking/approved/{id}', [BookingController::class, 'approved'])->
 
 
 Route::post('/check-availability', [BookingController::class, 'checkAvailability'])->name('check.availability');
-
+Route::get('/entrance-fees', [BookingController::class, 'getEntranceFees'])->name('entrance.fees');
 
 require __DIR__ . '/auth.php';

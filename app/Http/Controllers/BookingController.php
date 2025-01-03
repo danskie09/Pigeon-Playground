@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\EntranceFee;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -104,6 +105,19 @@ class BookingController extends Controller
             'message' => 'All selected rooms are available for booking!'
         ]);
     }
+
+    public function getEntranceFees()
+    {
+        $adultFee = EntranceFee::where('type', 'adult')->first();
+        $kidFee = EntranceFee::where('type', 'kid')->first();
+        
+        return response()->json([
+            'adult_rate' => $adultFee ? $adultFee->price : 0,
+            'child_rate' => $kidFee ? $kidFee->price : 0
+        ]);
+    }
+
+
 
 
 

@@ -171,14 +171,15 @@
                         <label class="form-check-label" for="cashPayment">Cash on Hand</label>
                     </div>
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="paymentMethod" id="gcash"
+                        <input class="form-check-input" type="radio" name="paymentMethod" id="gcashPayment"
                             value="gcash">
                         <label class="form-check-label" for="gcashPayment">GCash</label>
                     </div>
+                   
                 </div>
 
                 <!-- GCash QR Section -->
-                <div id="gcashQRSection" class="border rounded p-3 bg-light">
+                <!-- <div id="gcashQRSection" class="border rounded p-3 bg-light">
                     <div class="text-center mb-3">
                         <img src="assets/images/gcash-qr.png" alt="GCash QR Code" style="max-width: 200px;">
                     </div>
@@ -187,7 +188,7 @@
                         <input type="file" class="form-control" id="paymentProof" accept="image/*">
                         <img id="proofPreview" class="image-preview mt-2">
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Special Request -->
                 <div class="mb-3">
@@ -198,8 +199,8 @@
                 <!-- Total Amount -->
                 <div class="mb-3">
                     <label class="form-label">Total Amount</label>
-                    <input type="text" class="form-control form-control-lg" id="totalAmount" value="₱0.00"
-                        readonly>
+                    <input type="number" step="0.01" class="form-control form-control-lg" id="total_amount"
+                        >
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-lg w-100">Confirm Booking</button>
@@ -267,8 +268,9 @@
 
         $(document).ready(function() {
             let roomCount = 1;
-
-            // Add room
+            let checkingAvailability = false;
+            let timeoutId = null;
+            
             $('#add-room').click(function() {
                 roomCount++;
                 const roomHtml = `
@@ -322,7 +324,9 @@
                 $('#availability-message').removeClass('d-none');
             }
 
-            function checkAvailability() {
+
+
+function checkAvailability() {
                 if (checkingAvailability) return;
 
                 let roomIds = [];
@@ -378,7 +382,75 @@
                     $('#submit-button').prop('disabled', true);
                 }
             }
-        }); // Added closing bracket for document.ready
+
+            function calculateTotal() {
+                let total = 0;
+
+                // Calculate room cost
+                let checkIn = new Date($('#check_in').val());
+                let checkOut = new Date($('#check_out').val());
+                if (checkIn && checkOut) {
+                    let nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+                    $('.room-select').each(function () {
+                        let selected = $(this).find('option:selected');
+                        let price = selected.data('price');
+                        if (price) {
+                            total += price * nights;
+                        }
+                    });
+                }
+
+
+
+                // Calculate additional charges for adults and kids
+                let adultCount = parseInt($('#adult').val()) || 0;
+                let kidsCount = parseInt($('#kids').val()) || 0;
+
+                total += (adultCount * 100) + (kidsCount * 50);
+
+                // Update the total amount input
+                $('#total_amount').val(total.toFixed(2));
+            }
+
+            // Attach event listeners for adults and kids input fields
+            $('#adult, #kids').on('input', calculateTotal);
+
+            // Update calculateTotal on other relevant events
+            $(document).on('change', '.room-select', calculateTotal);
+            $('#check_in, #check_out').on('input change', calculateTotal);
+
+            $('#check_in, #check_out').on('input change', function() {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                
+                if ($('.room-select').val() && $('#check_in').val() && $('#check_out').val()) {
+                    showLoadingSpinner();
+                }
+                
+                timeoutId = setTimeout(function() {
+                    checkAvailability();
+                    calculateTotal();
+                }, 500);
+            });
+
+            // Date validation
+            $('#check_in').on('change', function() {
+                let checkIn = new Date($(this).val());
+                let checkOut = new Date($('#check_out').val());
+                
+                $('#check_out').attr('min', $(this).val());
+                
+                if (checkOut <= checkIn) {
+                    $('#check_out').val('');
+                }
+                calculateTotal();
+            });
+            
+            let today = new Date().toISOString().split('T')[0];
+            $('#check_in').attr('min', today);
+        }); // End of document.ready
     </script>
 
 </body>

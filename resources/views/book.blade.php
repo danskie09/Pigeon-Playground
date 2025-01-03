@@ -132,6 +132,7 @@ $(document).ready(function() {
             let checkingAvailability = false;
             let timeoutId = null;
             
+            
             $('#add-room').click(function() {
                 roomCount++;
                 const roomHtml = `
@@ -243,7 +244,6 @@ function checkAvailability() {
                     $('#submit-button').prop('disabled', true);
                 }
             }
-
             function calculateTotal() {
                 let total = 0;
 
@@ -262,17 +262,30 @@ function checkAvailability() {
                     });
                 }
 
+                // Fetch entrance fees and calculate total
+                $.ajax({
+                    url: "{{ route('entrance.fees') }}",
+                    method: "GET",
+                    success: function(response) {
+                        let adultCount = parseInt($('#adult').val()) || 0;
+                        let kidsCount = parseInt($('#kids').val()) || 0;
 
-
-                // Calculate additional charges for adults and kids
-                let adultCount = parseInt($('#adult').val()) || 0;
-                let kidsCount = parseInt($('#kids').val()) || 0;
-
-                total += (adultCount * 100) + (kidsCount * 50);
-
-                // Update the total amount input
-                $('#total_amount').val(total.toFixed(2));
+                        total += (adultCount * response.adult_rate) + (kidsCount * response.child_rate);
+                        
+                        // Update the total amount input
+                        $('#total_amount').val(total.toFixed(2));
+                    },
+                    error: function() {
+                        console.error('Failed to fetch entrance fees');
+                    }
+                });
             }
+
+
+
+              
+                
+            
 
             // Attach event listeners for adults and kids input fields
             $('#adult, #kids').on('input', calculateTotal);
