@@ -50,7 +50,7 @@
                                             <option value="">Choose a room...</option>
                                             @foreach($rooms as $room)
                                                 <option value="{{ $room->id }}" data-price="{{ $room->price }}">
-                                                    {{ $room->name }} - P {{ $room->price }}/night
+                                                    {{ $room->name }} - P {{ $room->price }}/night   
                                                 </option>
                                             @endforeach
                                         </select>

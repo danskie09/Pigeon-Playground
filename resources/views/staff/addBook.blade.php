@@ -12,10 +12,6 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 
-
-
-
-
     <title>Document</title>
 
 
@@ -90,6 +86,15 @@
                         </div> --}}
 
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small">Stay Duration</label>
+                        <select name="stay_duration" id="stay_duration" class="form-select" required>
+                            <option value="">Select duration...</option>
+                            <option value="daytime">Daytime (8am-9pm)</option>
+                            <option value="overnight">Overnight (6pm-11pm)</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Dates Section -->
@@ -152,9 +157,9 @@
                             <label class="form-label small">Select Room</label>
                             <select name="room_ids[]" class="form-select room-select" required>
                                 <option value="">Choose a room...</option>
-                                @foreach ($rooms as $room)
-                                    <option value="{{ $room->id }}" data-price="{{ $room->price }}">
-                                        {{ $room->name }} - P {{ $room->price }}/night
+                                @foreach($rooms as $room)
+                                    <option value="{{ $room->id }}" data-price="{{ $room->price }}" data-overnight="{{ $room->overnight_rate }}">
+                                        {{ $room->name }} - Day: P{{ $room->price }}/day - Night: P{{ $room->overnight_rate }}/night
                                     </option>
                                 @endforeach
                             </select>
@@ -220,8 +225,6 @@
 
 
 
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <!-- Include jQuery (required by Select2) -->
@@ -273,7 +276,6 @@
                     countrySelect.append(option).trigger('change');
                 });
         });
-
 
         $(document).ready(function() {
             let roomCount = 1;
@@ -332,8 +334,6 @@
                 $('#loading-spinner').addClass('d-none');
                 $('#availability-message').removeClass('d-none');
             }
-
-
 
             function checkAvailability() {
                 if (checkingAvailability) return;
@@ -395,17 +395,29 @@
             function calculateTotal() {
                 let total = 0;
 
+                // Get the stay duration
+                let stayDuration = $('#stay_duration').val();
+
                 // Calculate room cost
                 let checkIn = new Date($('#check_in').val());
                 let checkOut = new Date($('#check_out').val());
-                if (checkIn && checkOut) {
-                    let nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
 
+                if (checkIn && checkOut && stayDuration) {
                     $('.room-select').each(function() {
                         let selected = $(this).find('option:selected');
-                        let price = selected.data('price');
-                        if (price) {
-                            total += price * nights;
+                        let dayPrice = selected.data('price');
+                        let nightPrice = selected.data('overnight');
+
+                        if (dayPrice && nightPrice) {
+                            // Calculate the time difference in hours
+                            let timeDiff = (checkOut - checkIn) / (1000 * 60 * 60 * 24); // Convert to days
+
+                            // Apply rate based on stay duration
+                            if (stayDuration === 'daytime') {
+                                total += dayPrice * timeDiff;
+                            } else if (stayDuration === 'overnight') {
+                                total += nightPrice * timeDiff;
+                            }
                         }
                     });
                 }
@@ -429,27 +441,53 @@
                 });
             }
 
-            // Attach event listeners for adults and kids input fields
-            $('#adult, #kids').on('input', calculateTotal);
+            // Add event listener for stay duration change
+            $('#stay_duration').on('change', function() {
+                calculateTotal();
 
-            // Update calculateTotal on other relevant events
+                // Update the flatpickr time restrictions based on stay duration
+                let stayDuration = $(this).val();
+                if (stayDuration === 'daytime') {
+                    // Set time range for daytime (8am-9pm)
+                    flatpickr("#check_in", {
+                        enableTime: true,
+                        dateFormat: "Y-m-d H:i",
+                        minTime: "08:00",
+                        maxTime: "21:00",
+                        minDate: "today"
+                    });
+
+                    flatpickr("#check_out", {
+                        enableTime: true,
+                        dateFormat: "Y-m-d H:i",
+                        minTime: "08:00",
+                        maxTime: "21:00",
+                        minDate: "today"
+                    });
+                } else if (stayDuration === 'overnight') {
+                    // Set time range for overnight (6pm-11pm)
+                    flatpickr("#check_in", {
+                        enableTime: true,
+                        dateFormat: "Y-m-d H:i",
+                        minTime: "18:00",
+                        maxTime: "23:00",
+                        minDate: "today"
+                    });
+
+                    flatpickr("#check_out", {
+                        enableTime: true,
+                        dateFormat: "Y-m-d H:i",
+                        minTime: "18:00",
+                        maxTime: "23:00",
+                        minDate: "today"
+                    });
+                }
+            });
+
+            // Add event listeners for all inputs that affect total
+            $('#adult, #kids, #stay_duration').on('input change', calculateTotal);
             $(document).on('change', '.room-select', calculateTotal);
             $('#check_in, #check_out').on('input change', calculateTotal);
-
-            $('#check_in, #check_out').on('input change', function() {
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                }
-
-                if ($('.room-select').val() && $('#check_in').val() && $('#check_out').val()) {
-                    showLoadingSpinner();
-                }
-
-                timeoutId = setTimeout(function() {
-                    checkAvailability();
-                    calculateTotal();
-                }, 500);
-            });
 
             // Date validation
             $('#check_in').on('change', function() {

@@ -52,7 +52,7 @@ class BookingController extends Controller
                 'payment_method' => $request->payment_method,
                 'special_request' => $request->special_request,
                 'total_amount' => $request->total_amount,
-                'status' => 'pending'
+                'status' => 'approved'
             ]);
 
             // Attach all selected rooms to the booking
