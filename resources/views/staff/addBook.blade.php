@@ -412,11 +412,12 @@
                     let timeDiff = checkOutDate - checkInDate;
                     let daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
                     
+                    // Calculate room costs
                     $('.room-select').each(function() {
                         let selected = $(this).find('option:selected');
                         if (selected.val()) {
-                            let dayPrice = selected.data('price');
-                            let nightPrice = selected.data('overnight');
+                            let dayPrice = parseFloat(selected.data('price')) || 0;
+                            let nightPrice = parseFloat(selected.data('overnight')) || 0;
                             
                             if (stayDuration === 'daytime') {
                                 // If same date or 1 day difference, charge one day rate
@@ -446,20 +447,26 @@
                         success: function(response) {
                             let adultCount = parseInt($('#adult').val()) || 0;
                             let kidsCount = parseInt($('#kids').val()) || 0;
-                            let entranceFees = (adultCount * response.adult_rate) + (kidsCount * response.child_rate);
-                            let finalTotal = total + entranceFees;
-                            $('#total_amount').val(finalTotal);
+                            let entranceFees = (adultCount * parseFloat(response.adult_rate)) + (kidsCount * parseFloat(response.child_rate));
+                            let finalTotal = parseFloat(total) + parseFloat(entranceFees);
+                            
+                            // Format the total to avoid the leading zeros and ensure proper decimal places
+                            $('#total_amount').val(finalTotal.toFixed(2));
                         },
                         error: function() {
                             console.error('Failed to fetch entrance fees');
                         }
                     });
                 } else {
-                    $('#total_amount').val(0);
+                    $('#total_amount').val('0.00');
                 }
             }
 
-            
+            // Make sure to call calculateTotal when adding a new room
+            $('#add-room').on('click', function() {
+                // Wait for the new room to be added to the DOM
+                setTimeout(calculateTotal, 100);
+            });
 
             // Add event listeners for all inputs that affect total
             $('#adult, #kids, #stay_duration').on('input change', calculateTotal);

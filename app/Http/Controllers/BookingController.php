@@ -19,7 +19,7 @@ class BookingController extends Controller
             'room_ids' => 'required|array|min:1',
             'room_ids.*' => 'required|exists:rooms,id',
             'check_in' => 'required|date',
-            'check_out' => 'required|date|after:check_in',
+            'check_out' => 'required|date|after_or_equal:check_in',
             'adult' => 'required|integer|min:1',
             'kids' => 'nullable|integer|min:0',
             'payment_method' => 'required|string',
@@ -87,7 +87,7 @@ class BookingController extends Controller
             'room_ids' => 'required|array',
             'room_ids.*' => 'exists:rooms,id',
             'check_in' => 'required|date',
-            'check_out' => 'required|date|after:check_in'
+            'check_out' => 'required|date|after_or_equal:check_in'
         ]);
 
         $checkIn = Carbon::parse($request->check_in);
@@ -101,12 +101,10 @@ class BookingController extends Controller
                 ->where(function ($query) use ($checkIn, $checkOut) {
                     $query->where(function ($q) use ($checkIn, $checkOut) {
                         // Check if there's any overlap with existing bookings
-                        $q->whereBetween('check_in', [$checkIn, $checkOut])
-                            ->orWhereBetween('check_out', [$checkIn, $checkOut])
-                            ->orWhere(function ($q) use ($checkIn, $checkOut) {
-                                $q->where('check_in', '<=', $checkIn)
-                                    ->where('check_out', '>=', $checkOut);
-                            });
+                        $q->where(function ($q) use ($checkIn, $checkOut) {
+                            $q->where('check_in', '<', $checkOut)
+                              ->where('check_out', '>', $checkIn);
+                        });
                     });
                 })
                 ->first();
