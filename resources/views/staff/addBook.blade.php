@@ -295,8 +295,10 @@
                     <select name="room_ids[]" class="form-select room-select" required>
                         <option value="">Choose a room...</option>
                         @foreach ($rooms as $room)
-                            <option value="{{ $room->id }}" data-price="{{ $room->price }}">
-                                {{ $room->name }} - ${{ $room->price }}/night
+                            <option value="{{ $room->id }}" 
+                                data-price="{{ $room->price }}"
+                                data-overnight="{{ $room->overnight_price }}">
+                                {{ $room->name }} - Day: ${{ $room->price }} / Night: ${{ $room->overnight_price }}
                             </option>
                         @endforeach
                     </select>
@@ -306,6 +308,7 @@
                 $('#rooms-container').append(roomHtml);
                 updateRemoveButtons();
                 checkAvailability();
+                calculateTotal(); // Add this to update total when new room is added
             });
 
             // Remove room
