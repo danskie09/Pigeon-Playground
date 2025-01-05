@@ -297,8 +297,8 @@
                         @foreach ($rooms as $room)
                             <option value="{{ $room->id }}" 
                                 data-price="{{ $room->price }}"
-                                data-overnight="{{ $room->overnight_price }}">
-                                {{ $room->name }} - Day: ${{ $room->price }} / Night: ${{ $room->overnight_price }}
+                                data-overnight="{{ $room->overnight_rate }}">
+                                {{ $room->name }} - Day: P{{ $room->price }} / Night: P{{ $room->overnight_rate }}
                             </option>
                         @endforeach
                     </select>
