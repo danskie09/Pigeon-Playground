@@ -397,52 +397,66 @@
 
             function calculateTotal() {
                 let total = 0;
-
-                // Get the stay duration
                 let stayDuration = $('#stay_duration').val();
                 
-                // Calculate room cost
-                let checkIn = new Date($('#check_in').val());
-                let checkOut = new Date($('#check_out').val());
+                // Get only the date part, ignore time
+                let checkIn = $('#check_in').val().split(' ')[0];
+                let checkOut = $('#check_out').val().split(' ')[0];
                 
                 if (checkIn && checkOut) {
-                    let timeDiff = (checkOut - checkIn) / (1000 * 60 * 60 * 24); // Convert to days
-
+                    // Convert to Date objects for comparison
+                    let checkInDate = new Date(checkIn);
+                    let checkOutDate = new Date(checkOut);
+                    
+                    // Calculate number of days
+                    let timeDiff = checkOutDate - checkInDate;
+                    let daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+                    
                     $('.room-select').each(function() {
                         let selected = $(this).find('option:selected');
-                        if (selected.val()) { // Check if a room is selected
+                        if (selected.val()) {
                             let dayPrice = selected.data('price');
                             let nightPrice = selected.data('overnight');
                             
                             if (stayDuration === 'daytime') {
-                                total += dayPrice * timeDiff;
+                                // If same date or 1 day difference, charge one day rate
+                                if (daysDiff <= 1) {
+                                    total += dayPrice;
+                                } else {
+                                    total += dayPrice * daysDiff;
+                                }
                             } else if (stayDuration === 'overnight') {
-                                total += nightPrice * timeDiff;
-                            } else {
-                                // If no duration selected, use day price as default
-                                total += dayPrice * timeDiff;
+                                // For overnight stays, charge night rate per night
+                                if (daysDiff <= 1) {
+                                    total += nightPrice;
+                                } else {
+                                    total += nightPrice * daysDiff;
+                                }
                             }
                         }
                     });
+
+                    // Update display with room total
+                    $('#total_amount').val(total);
+
+                    // Fetch and add entrance fees
+                    $.ajax({
+                        url: "{{ route('entrance.fees') }}",
+                        method: "GET",
+                        success: function(response) {
+                            let adultCount = parseInt($('#adult').val()) || 0;
+                            let kidsCount = parseInt($('#kids').val()) || 0;
+                            let entranceFees = (adultCount * response.adult_rate) + (kidsCount * response.child_rate);
+                            let finalTotal = total + entranceFees;
+                            $('#total_amount').val(finalTotal);
+                        },
+                        error: function() {
+                            console.error('Failed to fetch entrance fees');
+                        }
+                    });
+                } else {
+                    $('#total_amount').val(0);
                 }
-
-                // Fetch entrance fees and calculate total
-                $.ajax({
-                    url: "{{ route('entrance.fees') }}",
-                    method: "GET",
-                    success: function(response) {
-                        let adultCount = parseInt($('#adult').val()) || 0;
-                        let kidsCount = parseInt($('#kids').val()) || 0;
-
-                        total += (adultCount * response.adult_rate) + (kidsCount * response.child_rate);
-
-                        // Update the total amount input
-                        $('#total_amount').val(total.toFixed(2));
-                    },
-                    error: function() {
-                        console.error('Failed to fetch entrance fees');
-                    }
-                });
             }
 
             

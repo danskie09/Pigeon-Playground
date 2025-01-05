@@ -20,6 +20,7 @@
                     <thead>
                         <tr>
                             <th>ID</th>
+                            <th>booking_number</th>
                             <th>Guest</th>
                             <th>Check In</th>
                             <th>Check Out</th>
@@ -35,6 +36,7 @@
                         @foreach($bookings as $booking)
                         <tr>
                             <td>#{{ $booking->id }}</td>
+                            <td>{{ $booking->booking_number }}</td>
                             <td>{{ $booking->user->name }}</td>
                             <td>{{ \Carbon\Carbon::parse($booking->check_in)->format('M d, Y H:i') }}</td>
                             <td>{{ \Carbon\Carbon::parse($booking->check_out)->format('M d, Y H:i') }}</td>
