@@ -26,25 +26,28 @@ class BookingController extends Controller
             'special_request' => 'nullable|string',
             'total_amount' => 'required|numeric|min:0',
             'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255'
+            'email' => 'required|email|max:255'
         ]);
 
         DB::beginTransaction();
         try {
 
             // Create or find user based on email
-        $user = User::firstOrCreate(
-            ['email' => $request->email],
-            [
-                'name' => $request->name,
-                'password' => bcrypt(Str::random(16)) // Generate random password
-            ]
-        );
+            $user = User::firstOrCreate(
+                ['email' => $request->email],
+                [
+                    'name' => $request->name,
+                    'password' => bcrypt(Str::random(16)) // Generate random password
+                ]
+            );
 
+            // Generate booking number
+            $bookingNumber = Booking::generateBookingNumber();
 
-
+            // Create the booking
             $booking = Booking::create([
                 'user_id' => $user->id,
+                'booking_number' => $bookingNumber,
                 'check_in' => $request->check_in,
                 'check_out' => $request->check_out,
                 'adult' => $request->adult,

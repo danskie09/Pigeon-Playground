@@ -17,19 +17,29 @@ class Booking extends Model
 
     protected $fillable = [
         'room_id',
+        'booking_number',
         'user_id',
         'check_in',
         'check_out',
         'adult',
         'kids',
         'payment_method',
-        'proof',
         'special_request',
         'total_amount',
-        'status',
+        'status'
     ];
 
-
+    /**
+     * Generate the next booking number
+     *
+     * @return string
+     */
+    public static function generateBookingNumber()
+    {
+        $latest = self::latest()->first();
+        $number = $latest ? intval(substr($latest->booking_number, -10)) + 1 : 1;
+        return 'PGR-BK-' . str_pad($number, 10, '0', STR_PAD_LEFT);
+    }
 
     public function rooms()
     {
