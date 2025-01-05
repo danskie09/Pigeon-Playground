@@ -397,26 +397,27 @@
 
                 // Get the stay duration
                 let stayDuration = $('#stay_duration').val();
-
+                
                 // Calculate room cost
                 let checkIn = new Date($('#check_in').val());
                 let checkOut = new Date($('#check_out').val());
+                
+                if (checkIn && checkOut) {
+                    let timeDiff = (checkOut - checkIn) / (1000 * 60 * 60 * 24); // Convert to days
 
-                if (checkIn && checkOut && stayDuration) {
                     $('.room-select').each(function() {
                         let selected = $(this).find('option:selected');
-                        let dayPrice = selected.data('price');
-                        let nightPrice = selected.data('overnight');
-
-                        if (dayPrice && nightPrice) {
-                            // Calculate the time difference in hours
-                            let timeDiff = (checkOut - checkIn) / (1000 * 60 * 60 * 24); // Convert to days
-
-                            // Apply rate based on stay duration
+                        if (selected.val()) { // Check if a room is selected
+                            let dayPrice = selected.data('price');
+                            let nightPrice = selected.data('overnight');
+                            
                             if (stayDuration === 'daytime') {
                                 total += dayPrice * timeDiff;
                             } else if (stayDuration === 'overnight') {
                                 total += nightPrice * timeDiff;
+                            } else {
+                                // If no duration selected, use day price as default
+                                total += dayPrice * timeDiff;
                             }
                         }
                     });
@@ -441,67 +442,45 @@
                 });
             }
 
-            // Add event listener for stay duration change
-            $('#stay_duration').on('change', function() {
-                calculateTotal();
-
-                // Update the flatpickr time restrictions based on stay duration
-                let stayDuration = $(this).val();
-                if (stayDuration === 'daytime') {
-                    // Set time range for daytime (8am-9pm)
-                    flatpickr("#check_in", {
-                        enableTime: true,
-                        dateFormat: "Y-m-d H:i",
-                        minTime: "08:00",
-                        maxTime: "21:00",
-                        minDate: "today"
-                    });
-
-                    flatpickr("#check_out", {
-                        enableTime: true,
-                        dateFormat: "Y-m-d H:i",
-                        minTime: "08:00",
-                        maxTime: "21:00",
-                        minDate: "today"
-                    });
-                } else if (stayDuration === 'overnight') {
-                    // Set time range for overnight (6pm-11pm)
-                    flatpickr("#check_in", {
-                        enableTime: true,
-                        dateFormat: "Y-m-d H:i",
-                        minTime: "18:00",
-                        maxTime: "23:00",
-                        minDate: "today"
-                    });
-
-                    flatpickr("#check_out", {
-                        enableTime: true,
-                        dateFormat: "Y-m-d H:i",
-                        minTime: "18:00",
-                        maxTime: "23:00",
-                        minDate: "today"
-                    });
-                }
-            });
+            
 
             // Add event listeners for all inputs that affect total
             $('#adult, #kids, #stay_duration').on('input change', calculateTotal);
-            $(document).on('change', '.room-select', calculateTotal);
-            $('#check_in, #check_out').on('input change', calculateTotal);
+            
+            // Update total when room is selected
+            $(document).on('change', '.room-select', function() {
+                calculateTotal();
+                checkAvailability();
+            });
+
+            $('#check_in, #check_out').on('input change', function() {
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                
+                if ($('.room-select').val() && $('#check_in').val() && $('#check_out').val()) {
+                    showLoadingSpinner();
+                }
+                
+                timeoutId = setTimeout(function() {
+                    checkAvailability();
+                    calculateTotal();
+                }, 500);
+            });
 
             // Date validation
             $('#check_in').on('change', function() {
                 let checkIn = new Date($(this).val());
                 let checkOut = new Date($('#check_out').val());
-
+                
                 $('#check_out').attr('min', $(this).val());
-
+                
                 if (checkOut <= checkIn) {
                     $('#check_out').val('');
                 }
                 calculateTotal();
             });
-
+            
             let today = new Date().toISOString().split('T')[0];
             $('#check_in').attr('min', today);
         }); // End of document.ready
