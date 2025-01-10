@@ -6,40 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bookings Calendar</title>
 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <style>
-        .container {
-            width: 90%;
-            margin: 20px auto;
-        }
-
-        #calendar {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
         .fc-event {
             cursor: pointer;
-            padding: 2px 5px;
         }
 
         .fc-event-title {
             font-weight: bold;
-        }
-
-        .legend {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
         }
 
         .legend-color {
@@ -50,36 +26,42 @@
     </style>
 </head>
 
-<body>
-    <div class="container">
-        <h1>Booking Calendar</h1>
+<body class="bg-light">
+    <div class="container py-4">
+        <h1 class="mb-4">Booking Calendar</h1>
 
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #28a745;"></div>
-                <span>Approved</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffc107;"></div>
-                <span>Pending</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #dc3545;"></div>
-                <span>Cancelled</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #17a2b8;"></div>
-                <span>Completed</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #6c757d;"></div>
-                <span>Other</span>
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-3 mb-4">
+                    <div class="d-flex align-items-center">
+                        <div class="legend-color bg-success me-2"></div>
+                        <span>Approved</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="legend-color bg-warning me-2"></div>
+                        <span>Pending</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="legend-color bg-danger me-2"></div>
+                        <span>Cancelled</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="legend-color bg-info me-2"></div>
+                        <span>Completed</span>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="legend-color bg-secondary me-2"></div>
+                        <span>Other</span>
+                    </div>
+                </div>
+
+                <div id="calendar"></div>
             </div>
         </div>
-
-        <div id="calendar"></div>
     </div>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
