@@ -59,20 +59,32 @@
                             rooms: booking.rooms.map(room => room.name).join(', '),
                             adults: booking.adult,
                             kids: booking.kids,
-                            status: booking.status
+                            status: booking.status,
+                            total_amount: booking.total_amount,
+                            payment_method: booking.payment_method,
+                            special_request: booking.special_request,
+                            check_in: new Date(booking.check_in).toLocaleDateString(),
+                            check_out: new Date(booking.check_out).toLocaleDateString()
                         },
                         backgroundColor: booking.status === 'approved' ? '#28a745' : '#ffc107'
                     }
                 }),
                 eventClick: function(info) {
                     alert(
-                        'Booking Details:\n' +
-                        'Booking: ' + info.event.title + '\n' +
-                        'Customer: ' + info.event.extendedProps.customer + '\n' +
-                        'Rooms: ' + info.event.extendedProps.rooms + '\n' +
-                        'Adults: ' + info.event.extendedProps.adults + '\n' +
-                        'Kids: ' + info.event.extendedProps.kids + '\n' +
-                        'Status: ' + info.event.extendedProps.status
+                        '📋 Booking Details\n' +
+                        '------------------------\n' +
+                        '🔖 ' + info.event.title + '\n' +
+                        '👤 Customer: ' + info.event.extendedProps.customer + '\n' +
+                        '🏠 Rooms: ' + info.event.extendedProps.rooms + '\n' +
+                        '📅 Check-in: ' + info.event.extendedProps.check_in + '\n' +
+                        '📅 Check-out: ' + info.event.extendedProps.check_out + '\n' +
+                        '👥 Adults: ' + info.event.extendedProps.adults + '\n' +
+                        '👶 Kids: ' + info.event.extendedProps.kids + '\n' +
+                        '💰 Total Amount: ₱' + info.event.extendedProps.total_amount + '\n' +
+                        '💳 Payment Method: ' + info.event.extendedProps.payment_method + '\n' +
+                        '🏷️ Status: ' + info.event.extendedProps.status + '\n' +
+                        (info.event.extendedProps.special_request ? '📝 Special Request: ' + info
+                            .event.extendedProps.special_request + '\n' : '')
                     );
                 }
             });
