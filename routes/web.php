@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/book', [BookingController::class, 'store'])->name('book.store');
 Route::get('/showbook', [BookingController::class, 'show'])->name('bookings.show');
+Route::get('/calendar', [BookingController::class, 'showCalendar'])->name('bookings.calendar');
 
 
 Route::patch('/booking/approved/{id}', [BookingController::class, 'approved'])->name('bookings.approved');

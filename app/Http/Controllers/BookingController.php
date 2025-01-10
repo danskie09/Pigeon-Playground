@@ -144,4 +144,11 @@ class BookingController extends Controller
         $bookings = Booking::with(['user', 'rooms'])->get();
         return view('staff.bookings', compact('bookings'));
     }
+
+
+
+    public function showCalendar(){
+        $bookings = Booking::with(['user', 'rooms'])->get();
+        return view('staff.calendar', compact('bookings'));
+    }
 }
