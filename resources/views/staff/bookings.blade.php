@@ -10,6 +10,13 @@
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <!-- Date Range Picker CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <style>
+        .date-filter {
+            min-width: 300px;
+        }
+    </style>
 </head>
 
 <body>
@@ -17,9 +24,11 @@
     <div class="container mt-4">
         <div class="card">
             <div class="card-header">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
                     <h4 class="mb-0">Bookings</h4>
-                    <div>
+                    <div class="d-flex gap-3">
+                        <input type="text" id="dateFilter" class="form-control date-filter"
+                            placeholder="Select date range">
                         <select id="statusFilter" class="form-select">
                             <option value="">All Statuses</option>
                             <option value="pending">Pending</option>
@@ -129,9 +138,32 @@
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <!-- Date Range Picker JS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
     <script>
         $(document).ready(function() {
+            // Initialize date range picker
+            $('#dateFilter').daterangepicker({
+                autoUpdateInput: false,
+                locale: {
+                    cancelLabel: 'Clear',
+                    format: 'MMM DD, YYYY'
+                }
+            });
+
+            $('#dateFilter').on('apply.daterangepicker', function(ev, picker) {
+                $(this).val(picker.startDate.format('MMM DD, YYYY') + ' - ' + picker.endDate.format(
+                    'MMM DD, YYYY'));
+                filterTable();
+            });
+
+            $('#dateFilter').on('cancel.daterangepicker', function(ev, picker) {
+                $(this).val('');
+                filterTable();
+            });
+
             var table = $('#bookingsTable').DataTable({
                 responsive: true,
                 order: [
@@ -156,12 +188,31 @@
                 }
             });
 
+            // Combined filter function
+            function filterTable() {
+                $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+                    var dateRange = $('#dateFilter').val();
+
+                    if (!dateRange) {
+                        return true;
+                    }
+
+                    var dates = dateRange.split(' - ');
+                    var startDate = moment(dates[0], 'MMM DD, YYYY');
+                    var endDate = moment(dates[1], 'MMM DD, YYYY');
+                    var checkIn = moment(data[3], 'MMM DD, YYYY HH:mm'); // Index 3 is Check In column
+
+                    return checkIn.isBetween(startDate, endDate, null, '[]');
+                });
+
+                table.draw();
+                $.fn.dataTable.ext.search.pop(); // Remove the filter after drawing
+            }
+
             // Add status filter functionality
             $('#statusFilter').on('change', function() {
                 var status = $(this).val();
-                table.column(9) // Assuming status is in column index 9
-                    .search(status)
-                    .draw();
+                table.column(9).search(status).draw();
             });
         });
     </script>
