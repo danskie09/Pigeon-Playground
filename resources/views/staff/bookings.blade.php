@@ -10,11 +10,21 @@
     <!-- DataTables CSS -->
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <!-- DataTables Buttons CSS -->
+    <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
     <!-- Date Range Picker CSS -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <style>
         .date-filter {
             min-width: 300px;
+        }
+
+        .dt-buttons {
+            margin-bottom: 1rem;
+        }
+
+        .dt-button {
+            margin-right: 5px;
         }
     </style>
 </head>
@@ -138,6 +148,14 @@
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+    <!-- DataTables Buttons JS -->
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
     <!-- Date Range Picker JS -->
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
@@ -185,8 +203,44 @@
                     info: "Showing _START_ to _END_ of _TOTAL_ bookings",
                     infoEmpty: "No bookings available",
                     infoFiltered: "(filtered from _MAX_ total bookings)"
-                }
+                },
+                dom: 'Bfrtip', // Restore 'B' to dom to handle buttons
+                buttons: [{
+                        extend: 'collection',
+                        text: 'Export',
+                        buttons: [{
+                                extend: 'excel',
+                                text: '<i class="bi bi-file-earmark-excel"></i> Excel',
+                                className: 'btn btn-success',
+                                exportOptions: {
+                                    columns: ':not(:last-child)' // Exclude Actions column
+                                },
+                                title: 'Bookings_' + new Date().toISOString().slice(0, 10)
+                            },
+                            {
+                                extend: 'pdf',
+                                text: '<i class="bi bi-file-earmark-pdf"></i> PDF',
+                                className: 'btn btn-danger',
+                                exportOptions: {
+                                    columns: ':not(:last-child)'
+                                },
+                                title: 'Bookings_' + new Date().toISOString().slice(0, 10)
+                            }
+                        ]
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i class="bi bi-printer"></i> Print',
+                        className: 'btn btn-primary',
+                        exportOptions: {
+                            columns: ':not(:last-child)'
+                        }
+                    }
+                ]
             });
+
+            // Remove the line that appends buttons to exportButtons
+            // table.buttons().container().appendTo('#exportButtons');
 
             // Combined filter function
             function filterTable() {
