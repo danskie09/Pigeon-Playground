@@ -28,12 +28,55 @@
         .fc-event-title {
             font-weight: bold;
         }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <h1>Booking Calendar</h1>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #28a745;"></div>
+                <span>Approved</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffc107;"></div>
+                <span>Pending</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #dc3545;"></div>
+                <span>Cancelled</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #17a2b8;"></div>
+                <span>Completed</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #6c757d;"></div>
+                <span>Other</span>
+            </div>
+        </div>
+
         <div id="calendar"></div>
     </div>
 
@@ -50,6 +93,22 @@
                     right: 'dayGridMonth,dayGridWeek,dayGridDay'
                 },
                 events: bookings.map(function(booking) {
+                    // Function to determine event color based on status
+                    function getStatusColor(status) {
+                        switch (status.toLowerCase()) {
+                            case 'approved':
+                                return '#28a745'; // Green
+                            case 'pending':
+                                return '#ffc107'; // Yellow
+                            case 'cancelled':
+                                return '#dc3545'; // Red
+                            case 'completed':
+                                return '#17a2b8'; // Blue
+                            default:
+                                return '#6c757d'; // Gray
+                        }
+                    }
+
                     return {
                         title: 'Booking #' + booking.booking_number,
                         start: booking.check_in,
@@ -66,7 +125,7 @@
                             check_in: new Date(booking.check_in).toLocaleDateString(),
                             check_out: new Date(booking.check_out).toLocaleDateString()
                         },
-                        backgroundColor: booking.status === 'approved' ? '#28a745' : '#ffc107'
+                        backgroundColor: getStatusColor(booking.status)
                     }
                 }),
                 eventClick: function(info) {
